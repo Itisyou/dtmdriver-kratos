@@ -104,6 +104,11 @@ func (k *kratosDriver) RegisterService(target string, endpoint string) error {
 	if err != nil {
 		return err
 	}
+	var username, password string
+	if u.User != nil {
+		password, _ = u.User.Password()
+		username = u.User.Username()
+	}
 	switch u.Scheme {
 	case DefaultScheme:
 		fallthrough
@@ -119,6 +124,8 @@ func (k *kratosDriver) RegisterService(target string, endpoint string) error {
 		}
 		client, err := etcdAPI.New(etcdAPI.Config{
 			Endpoints: strings.Split(u.Host, ","),
+			Username:  password,
+			Password:  username,
 		})
 		if err != nil {
 			return err
@@ -135,7 +142,11 @@ func (k *kratosDriver) RegisterService(target string, endpoint string) error {
 			Name:      strings.TrimPrefix(u.Path, "/"),
 			Endpoints: strings.Split(endpoint, ","),
 		}
-		client, err := consulAPI.NewClient(&consulAPI.Config{Address: u.Host})
+		var auth *consulAPI.HttpBasicAuth
+		if username != "" {
+			auth = &consulAPI.HttpBasicAuth{Username: username, Password: password}
+		}
+		client, err := consulAPI.NewClient(&consulAPI.Config{Address: u.Host, HttpAuth: auth})
 		if err != nil {
 			return err
 		}
