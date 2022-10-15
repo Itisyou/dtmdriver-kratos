@@ -124,8 +124,8 @@ func (k *kratosDriver) RegisterService(target string, endpoint string) error {
 		}
 		client, err := etcdAPI.New(etcdAPI.Config{
 			Endpoints: strings.Split(u.Host, ","),
-			Username:  password,
-			Password:  username,
+			Username:  username,
+			Password:  password,
 		})
 		if err != nil {
 			return err
